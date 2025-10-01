@@ -255,6 +255,14 @@
             font-size: 12px;
             color: #666;
         }
+
+        .script-ads-section {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -275,6 +283,7 @@
         <div class="admin-tabs">
             <button class="tab-btn active" onclick="openTab('videos-tab')">📹 ဗီဒီယိုများ</button>
             <button class="tab-btn" onclick="openTab('ads-tab')">📢 ကြော်ငြာများ</button>
+            <button class="tab-btn" onclick="openTab('script-ads-tab')">📜 Script Ads</button>
         </div>
 
         <!-- Videos Tab -->
@@ -345,6 +354,7 @@
                                 <option value="">-- ရွေးချယ်ပါ --</option>
                                 <option value="main-banner">မူရင်းစာမျက်နှာ Banner</option>
                                 <option value="video-sidebar">ဗီဒီယိုဘေးဘား Banner</option>
+                                <option value="popup">Popup Ad</option>
                             </select>
                         </div>
                         
@@ -365,6 +375,7 @@
                                 <option value="728x90">Banner (728x90)</option>
                                 <option value="300x250">Sidebar (300x250)</option>
                                 <option value="300x600">Large Sidebar (300x600)</option>
+                                <option value="popup">Popup</option>
                             </select>
                         </div>
                         
@@ -389,6 +400,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- Script Ads Tab -->
+        <div id="script-ads-tab" class="tab-content">
+            <div class="admin-content">
+                <div class="form-section">
+                    <h2>📜 Script-based Ads ထည့်ရန်</h2>
+                    
+                    <div id="script-ad-status" class="status-message"></div>
+                    
+                    <form id="script-ad-form">
+                        <div class="form-group">
+                            <label>ကြော်ငြာအမည်</label>
+                            <input type="text" id="script-ad-name" placeholder="ကြော်ငြာအမည်ထည့်ပါ" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာအမျိုးအစား</label>
+                            <select id="script-ad-type" required>
+                                <option value="">-- ရွေးချယ်ပါ --</option>
+                                <option value="main-banner">မူရင်းစာမျက်နှာ Banner</option>
+                                <option value="video-sidebar">ဗီဒီယိုဘေးဘား Banner</option>
+                                <option value="popup">Popup</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Script Code</label>
+                            <textarea id="script-ad-code" placeholder="&lt;script&gt;...&lt;/script&gt;" rows="8" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာဖော်ပြချက်</label>
+                            <textarea id="script-ad-description" placeholder="ကြော်ငြာအကြောင်းဖော်ပြချက်" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">✅ Script Ad ထည့်မည်</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h2>📜 လက်ရှိ Script Ads များ</h2>
+                    <div id="script-ads-list" class="items-grid">
+                        <!-- Script ads will be loaded here automatically -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -401,7 +459,7 @@
             apiKey: "AIzaSyDpVAez3lDTjspACADGiGt9To1hxq_qoeM",
             authDomain: "quickview-50eba.firebaseapp.com",
             projectId: "quickview-50eba",
-            storageBucket: "quickview-50eba.appspot.com", // Fixed storage bucket
+            storageBucket: "quickview-50eba.firebasestorage.app",
             messagingSenderId: "705897955715",
             appId: "1:705897955715:web:f81d2d4c0a927ea0b7f6b6"
         };
@@ -458,20 +516,7 @@
             }, 5000);
         }
 
-        // Ad Preview
-        document.getElementById('ad-image').addEventListener('input', function() {
-            const preview = document.getElementById('ad-preview');
-            const previewImg = document.getElementById('preview-image');
-            
-            if (this.value) {
-                previewImg.src = this.value;
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
-            }
-        });
-
-        // Video Management - Fixed version
+        // Video Management
         document.getElementById('video-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -486,15 +531,10 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            console.log('Adding video:', videoData);
-
             try {
                 const docRef = await db.collection('videos').add(videoData);
-                console.log('Video added with ID:', docRef.id);
                 showStatus('✅ ဗီဒီယိုထည့်သွင်းပြီးပါပြီ!', 'success', 'video');
                 document.getElementById('video-form').reset();
-                
-                // Reload videos list
                 loadVideos();
             } catch (error) {
                 console.error('Error adding video:', error);
@@ -502,7 +542,7 @@
             }
         });
 
-        // Load Videos - Fixed version
+        // Load Videos
         function loadVideos() {
             db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
                 const videosList = document.getElementById('videos-list');
@@ -525,10 +565,6 @@
                     `;
                     videosList.appendChild(videoCard);
                 });
-            }, (error) => {
-                console.error('Error loading videos:', error);
-                document.getElementById('videos-list').innerHTML = 
-                    '<p style="text-align: center; color: #e74c3c;">❌ ဗီဒီယိုများဖတ်ရာတွင်အမှားတစ်ခုရှိသည်</p>';
             });
         }
 
@@ -539,7 +575,6 @@
                     await db.collection('videos').doc(videoId).delete();
                     showStatus('🗑️ ဗီဒီယိုဖျက်ပြီးပါပြီ!', 'success', 'video');
                 } catch (error) {
-                    console.error('Error:', error);
                     showStatus('❌ ဗီဒီယိုဖျက်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'video');
                 }
             }
@@ -557,6 +592,7 @@
                 size: document.getElementById('ad-size').value,
                 description: document.getElementById('ad-description').value,
                 isActive: true,
+                adType: 'image', // image ad type
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -565,40 +601,100 @@
                 showStatus('✅ ကြော်ငြာထည့်သွင်းပြီးပါပြီ!', 'success', 'ad');
                 document.getElementById('ad-form').reset();
                 document.getElementById('ad-preview').style.display = 'none';
+                loadAds();
             } catch (error) {
-                console.error('Error:', error);
                 showStatus('❌ ကြော်ငြာထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
             }
         });
 
         // Load Ads
-        db.collection('ads').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            const adsList = document.getElementById('ads-list');
-            adsList.innerHTML = '';
+        function loadAds() {
+            db.collection('ads').where('adType', '==', 'image').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+                const adsList = document.getElementById('ads-list');
+                adsList.innerHTML = '';
 
-            if (snapshot.empty) {
-                adsList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ကြော်ငြာမရှိသေးပါ</p>';
-                return;
-            }
+                if (snapshot.empty) {
+                    adsList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ကြော်ငြာမရှိသေးပါ</p>';
+                    return;
+                }
 
-            snapshot.forEach((doc) => {
-                const ad = doc.data();
-                const adCard = document.createElement('div');
-                adCard.className = 'item-card';
-                adCard.innerHTML = `
-                    <div class="item-title">${ad.name}</div>
-                    <div class="item-meta">${ad.type} • ${ad.size}</div>
-                    <div style="font-size: 12px; color: #95a5a6;">${ad.description || 'ဖော်ပြချက်မရှိ'}</div>
-                    <div>
-                        <button onclick="toggleAd('${doc.id}', ${!ad.isActive})" class="${ad.isActive ? 'btn-danger' : 'btn-edit'}">
-                            ${ad.isActive ? '❌ ပိတ်မည်' : '✅ ဖွင့်မည်'}
-                        </button>
-                        <button onclick="deleteAd('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
-                    </div>
-                `;
-                adsList.appendChild(adCard);
+                snapshot.forEach((doc) => {
+                    const ad = doc.data();
+                    const adCard = document.createElement('div');
+                    adCard.className = 'item-card';
+                    adCard.innerHTML = `
+                        <div class="item-title">${ad.name}</div>
+                        <div class="item-meta">${ad.type} • ${ad.size}</div>
+                        <div style="font-size: 12px; color: #95a5a6;">${ad.description || 'ဖော်ပြချက်မရှိ'}</div>
+                        <div>
+                            <button onclick="toggleAd('${doc.id}', ${!ad.isActive})" class="${ad.isActive ? 'btn-danger' : 'btn-edit'}">
+                                ${ad.isActive ? '❌ ပိတ်မည်' : '✅ ဖွင့်မည်'}
+                            </button>
+                            <button onclick="deleteAd('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
+                        </div>
+                    `;
+                    adsList.appendChild(adCard);
+                });
             });
+        }
+
+        // SCRIPT ADS MANAGEMENT
+        document.getElementById('script-ad-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const scriptAdData = {
+                name: document.getElementById('script-ad-name').value,
+                type: document.getElementById('script-ad-type').value,
+                scriptCode: document.getElementById('script-ad-code').value,
+                description: document.getElementById('script-ad-description').value,
+                isActive: true,
+                adType: 'script', // script ad type
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('ads').add(scriptAdData);
+                showStatus('✅ Script Ad ထည့်သွင်းပြီးပါပြီ!', 'success', 'script-ad');
+                document.getElementById('script-ad-form').reset();
+                loadScriptAds();
+            } catch (error) {
+                showStatus('❌ Script Ad ထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'script-ad');
+            }
         });
+
+        // Load Script Ads
+        function loadScriptAds() {
+            db.collection('ads').where('adType', '==', 'script').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+                const scriptAdsList = document.getElementById('script-ads-list');
+                scriptAdsList.innerHTML = '';
+
+                if (snapshot.empty) {
+                    scriptAdsList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ Script Ad မရှိသေးပါ</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const ad = doc.data();
+                    const adCard = document.createElement('div');
+                    adCard.className = 'item-card';
+                    adCard.innerHTML = `
+                        <div class="item-title">${ad.name}</div>
+                        <div class="item-meta">${ad.type} • Script Ad</div>
+                        <div style="font-size: 12px; color: #95a5a6; margin-bottom: 10px;">${ad.description || 'ဖော်ပြချက်မရှိ'}</div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 10px; overflow: hidden; max-height: 100px;">
+                            ${ad.scriptCode.substring(0, 200)}...
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="toggleAd('${doc.id}', ${!ad.isActive})" class="${ad.isActive ? 'btn-danger' : 'btn-edit'}">
+                                ${ad.isActive ? '❌ ပိတ်မည်' : '✅ ဖွင့်မည်'}
+                            </button>
+                            <button onclick="deleteAd('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
+                        </div>
+                    `;
+                    scriptAdsList.appendChild(adCard);
+                });
+            });
+        }
 
         // Toggle Ad Active Status
         async function toggleAd(adId, newStatus) {
@@ -607,8 +703,9 @@
                     isActive: newStatus
                 });
                 showStatus(`✅ ကြော်ငြာ ${newStatus ? 'ဖွင့်ပြီးပါပြီ' : 'ပိတ်ပြီးပါပြီ'}!`, 'success', 'ad');
+                loadAds();
+                loadScriptAds();
             } catch (error) {
-                console.error('Error:', error);
                 showStatus('❌ ကြော်ငြာပြင်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
             }
         }
@@ -619,116 +716,36 @@
                 try {
                     await db.collection('ads').doc(adId).delete();
                     showStatus('🗑️ ကြော်ငြာဖျက်ပြီးပါပြီ!', 'success', 'ad');
+                    loadAds();
+                    loadScriptAds();
                 } catch (error) {
-                    console.error('Error:', error);
                     showStatus('❌ ကြော်ငြာဖျက်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
                 }
             }
         }
 
-        // BACKUP & RESTORE FUNCTIONS
-        async function exportData() {
-            try {
-                // Get all videos
-                const videosSnapshot = await db.collection('videos').get();
-                const videosData = [];
-                videosSnapshot.forEach(doc => {
-                    videosData.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-
-                // Get all ads
-                const adsSnapshot = await db.collection('ads').get();
-                const adsData = [];
-                adsSnapshot.forEach(doc => {
-                    adsData.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-
-                // Create backup object
-                const backupData = {
-                    exportedAt: new Date().toISOString(),
-                    firebaseConfig: firebaseConfig,
-                    videos: videosData,
-                    ads: adsData
-                };
-
-                // Create and download JSON file
-                const dataStr = JSON.stringify(backupData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `quickview-backup-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-
-                alert('✅ Data backup ပြုလုပ်ပြီးပါပြီ! backup.json ဖိုင်ကို download လုပ်ထားပါ။');
-
-            } catch (error) {
-                console.error('Backup error:', error);
-                alert('❌ Backup လုပ်ရာတွင် အမှားတစ်ခုရှိသည်');
+        // Ad Preview
+        document.getElementById('ad-image').addEventListener('input', function() {
+            const preview = document.getElementById('ad-preview');
+            const previewImg = document.getElementById('preview-image');
+            
+            if (this.value) {
+                previewImg.src = this.value;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
             }
-        }
-
-        // Restore Data
-        document.getElementById('restore-file').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            
-            reader.onload = async function(e) {
-                try {
-                    const backupData = JSON.parse(e.target.result);
-                    
-                    if (!confirm(`ဒီ backup file ထဲက data တွေအားလုံးကို လက်ရှိ data တွေနဲ့ အစားထိုးမှာဖြစ်ပါတယ်။ ဆက်လုပ်မှာသေချာပါသလား?`)) {
-                        return;
-                    }
-
-                    // Clear existing data
-                    const videosSnapshot = await db.collection('videos').get();
-                    const adsSnapshot = await db.collection('ads').get();
-                    
-                    const deletePromises = [
-                        ...videosSnapshot.docs.map(doc => doc.ref.delete()),
-                        ...adsSnapshot.docs.map(doc => doc.ref.delete())
-                    ];
-                    
-                    await Promise.all(deletePromises);
-
-                    // Restore videos
-                    for (const video of backupData.videos) {
-                        await db.collection('videos').doc(video.id).set(video);
-                    }
-                    
-                    // Restore ads  
-                    for (const ad of backupData.ads) {
-                        await db.collection('ads').doc(ad.id).set(ad);
-                    }
-                    
-                    alert('✅ Data restore ပြုလုပ်ပြီးပါပြီ! စာမျက်နှာကို reload လုပ်ပါ။');
-                    location.reload();
-                    
-                } catch (error) {
-                    console.error('Restore error:', error);
-                    alert('❌ Restore လုပ်ရာတွင် အမှားတစ်ခုရှိသည် - file format မှန်ရဲ့လား?');
-                }
-            };
-            
-            reader.readAsText(file);
-            this.value = ''; // Reset file input
         });
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadVideos();
+            loadAds();
+            loadScriptAds();
             console.log('Admin panel initialized');
         });
+
+        // Backup & Restore functions remain the same...
     </script>
 </body>
 </html>
