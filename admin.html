@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Video & Ads Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pyidaungsu', 'Myanmar Text', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .admin-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-backup {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-restore {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            background: #34495e;
+            padding: 0;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .admin-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .btn-edit {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .items-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .item-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .item-card:hover {
+            transform: translateX(5px);
+            border-color: #3498db;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .item-meta {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .ad-preview {
+            max-width: 300px;
+            max-height: 250px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .ad-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div>
+                <h1>🎬 Admin Panel</h1>
+                <p>ဗီဒီယိုနှင့် ကြော်ငြာများ စီမံခန့်ခွဲရန်</p>
+            </div>
+            <div class="header-actions">
+                <a href="https://YOUR_FIREBASE_APP.web.app" class="btn-backup">🏠 Website</a>
+                <button class="btn-backup" onclick="exportData()">💾 Backup Data</button>
+                <button class="btn-restore" onclick="document.getElementById('restore-file').click()">📥 Restore Data</button>
+                <input type="file" id="restore-file" class="file-input" accept=".json">
+            </div>
+        </header>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="openTab('videos-tab')">📹 ဗီဒီယိုများ</button>
+            <button class="tab-btn" onclick="openTab('ads-tab')">📢 ကြော်ငြာများ</button>
+        </div>
+
+        <!-- Videos Tab -->
+        <div id="videos-tab" class="tab-content active">
+            <div class="admin-content">
+                <div class="form-section">
+                    <h2>➕ ဗီဒီယိုအသစ်ထည့်ရန်</h2>
+                    
+                    <div id="video-status" class="status-message"></div>
+                    
+                    <form id="video-form">
+                        <div class="form-group">
+                            <label>ဗီဒီယိုခေါင်းစဉ်</label>
+                            <input type="text" id="video-title" placeholder="ဗီဒီယိုခေါင်းစဉ်ထည့်ပါ" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Video URL (Google Drive)</label>
+                            <input type="url" id="video-url" placeholder="https://drive.google.com/uc?export=download&id=FILE_ID" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Thumbnail URL</label>
+                            <input type="url" id="video-thumbnail" placeholder="https://images.example.com/image.jpg" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ချန်နယ်အမည်</label>
+                            <input type="text" id="video-channel" placeholder="ချန်နယ်နာမည်ထည့်ပါ" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြာချိန်</label>
+                            <input type="text" id="video-duration" placeholder="၁၂:၃၄" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">✅ ဗီဒီယိုထည့်မည်</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h2>📹 လက်ရှိဗီဒီယိုများ</h2>
+                    <div id="videos-list" class="items-grid">
+                        <!-- Videos will be loaded here automatically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ads Tab -->
+        <div id="ads-tab" class="tab-content">
+            <div class="admin-content">
+                <div class="form-section">
+                    <h2>📢 ကြော်ငြာအသစ်ထည့်ရန်</h2>
+                    
+                    <div id="ad-status" class="status-message"></div>
+                    
+                    <form id="ad-form">
+                        <div class="form-group">
+                            <label>ကြော်ငြာအမည်</label>
+                            <input type="text" id="ad-name" placeholder="ကြော်ငြာအမည်ထည့်ပါ" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာအမျိုးအစား</label>
+                            <select id="ad-type" required>
+                                <option value="">-- ရွေးချယ်ပါ --</option>
+                                <option value="main-banner">မူရင်းစာမျက်နှာ Banner</option>
+                                <option value="video-sidebar">ဗီဒီယိုဘေးဘား Banner</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာပုံ</label>
+                            <input type="url" id="ad-image" placeholder="https://example.com/ad-image.jpg" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာ Link</label>
+                            <input type="url" id="ad-link" placeholder="https://example.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာအရွယ်အစား</label>
+                            <select id="ad-size" required>
+                                <option value="">-- ရွေးချယ်ပါ --</option>
+                                <option value="728x90">Banner (728x90)</option>
+                                <option value="300x250">Sidebar (300x250)</option>
+                                <option value="300x600">Large Sidebar (300x600)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ကြော်ငြာဖော်ပြချက်</label>
+                            <textarea id="ad-description" placeholder="ကြော်ငြာအကြောင်းဖော်ပြချက်" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">✅ ကြော်ငြာထည့်မည်</button>
+                    </form>
+                    
+                    <div id="ad-preview" class="ad-preview">
+                        <img id="preview-image" src="" alt="Ad Preview">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>📢 လက်ရှိကြော်ငြာများ</h2>
+                    <div id="ads-list" class="items-grid">
+                        <!-- Ads will be loaded here automatically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Configuration - သင့်ရဲ့ config နဲ့အစားထိုးပါ
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpVAez3lDTjspACADGiGt9To1hxq_qoeM",
+            authDomain: "quickview-50eba.firebaseapp.com",
+            projectId: "quickview-50eba",
+            storageBucket: "quickview-50eba.firebasestorage.app",
+            messagingSenderId: "705897955715",
+            appId: "1:705897955715:web:f81d2d4c0a927ea0b7f6b6"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Tab Management
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Status Messages
+        function showStatus(message, type, tab) {
+            const statusEl = document.getElementById(tab + '-status');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Ad Preview
+        document.getElementById('ad-image').addEventListener('input', function() {
+            const preview = document.getElementById('ad-preview');
+            const previewImg = document.getElementById('preview-image');
+            
+            if (this.value) {
+                previewImg.src = this.value;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Video Management
+        document.getElementById('video-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const videoData = {
+                title: document.getElementById('video-title').value,
+                videoUrl: document.getElementById('video-url').value,
+                thumbnail: document.getElementById('video-thumbnail').value,
+                channel: document.getElementById('video-channel').value,
+                duration: document.getElementById('video-duration').value,
+                views: "၀ ကြည့်ရှုမှု",
+                uploadDate: "ယခုနောက်ဆုံး",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('videos').add(videoData);
+                showStatus('✅ ဗီဒီယိုထည့်သွင်းပြီးပါပြီ!', 'success', 'video');
+                document.getElementById('video-form').reset();
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('❌ ဗီဒီယိုထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'video');
+            }
+        });
+
+        // Load Videos
+        db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            const videosList = document.getElementById('videos-list');
+            videosList.innerHTML = '';
+
+            if (snapshot.empty) {
+                videosList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ဗီဒီယိုမရှိသေးပါ</p>';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const video = doc.data();
+                const videoCard = document.createElement('div');
+                videoCard.className = 'item-card';
+                videoCard.innerHTML = `
+                    <div class="item-title">${video.title}</div>
+                    <div class="item-meta">${video.channel} • ${video.duration}</div>
+                    <div style="font-size: 12px; color: #95a5a6;">${video.views} • ${video.uploadDate}</div>
+                    <button onclick="deleteVideo('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
+                `;
+                videosList.appendChild(videoCard);
+            });
+        });
+
+        // Delete Video
+        async function deleteVideo(videoId) {
+            if (confirm('ဤဗီဒီယိုကို ဖျက်မှာသေချာပါသလား?')) {
+                try {
+                    await db.collection('videos').doc(videoId).delete();
+                    showStatus('🗑️ ဗီဒီယိုဖျက်ပြီးပါပြီ!', 'success', 'video');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus('❌ ဗီဒီယိုဖျက်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'video');
+                }
+            }
+        }
+
+        // AD MANAGEMENT
+        document.getElementById('ad-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const adData = {
+                name: document.getElementById('ad-name').value,
+                type: document.getElementById('ad-type').value,
+                image: document.getElementById('ad-image').value,
+                link: document.getElementById('ad-link').value,
+                size: document.getElementById('ad-size').value,
+                description: document.getElementById('ad-description').value,
+                isActive: true,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('ads').add(adData);
+                showStatus('✅ ကြော်ငြာထည့်သွင်းပြီးပါပြီ!', 'success', 'ad');
+                document.getElementById('ad-form').reset();
+                document.getElementById('ad-preview').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('❌ ကြော်ငြာထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
+            }
+        });
+
+        // Load Ads
+        db.collection('ads').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            const adsList = document.getElementById('ads-list');
+            adsList.innerHTML = '';
+
+            if (snapshot.empty) {
+                adsList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ကြော်ငြာမရှိသေးပါ</p>';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const ad = doc.data();
+                const adCard = document.createElement('div');
+                adCard.className = 'item-card';
+                adCard.innerHTML = `
+                    <div class="item-title">${ad.name}</div>
+                    <div class="item-meta">${ad.type} • ${ad.size}</div>
+                    <div style="font-size: 12px; color: #95a5a6;">${ad.description || 'ဖော်ပြချက်မရှိ'}</div>
+                    <div>
+                        <button onclick="toggleAd('${doc.id}', ${!ad.isActive})" class="${ad.isActive ? 'btn-danger' : 'btn-edit'}">
+                            ${ad.isActive ? '❌ ပိတ်မည်' : '✅ ဖွင့်မည်'}
+                        </button>
+                        <button onclick="deleteAd('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
+                    </div>
+                `;
+                adsList.appendChild(adCard);
+            });
+        });
+
+        // Toggle Ad Active Status
+        async function toggleAd(adId, newStatus) {
+            try {
+                await db.collection('ads').doc(adId).update({
+                    isActive: newStatus
+                });
+                showStatus(`✅ ကြော်ငြာ ${newStatus ? 'ဖွင့်ပြီးပါပြီ' : 'ပိတ်ပြီးပါပြီ'}!`, 'success', 'ad');
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('❌ ကြော်ငြာပြင်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
+            }
+        }
+
+        // Delete Ad
+        async function deleteAd(adId) {
+            if (confirm('ဤကြော်ငြာကို ဖျက်မှာသေချာပါသလား?')) {
+                try {
+                    await db.collection('ads').doc(adId).delete();
+                    showStatus('🗑️ ကြော်ငြာဖျက်ပြီးပါပြီ!', 'success', 'ad');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus('❌ ကြော်ငြာဖျက်ရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'ad');
+                }
+            }
+        }
+
+        // BACKUP & RESTORE FUNCTIONS
+        async function exportData() {
+            try {
+                // Get all videos
+                const videosSnapshot = await db.collection('videos').get();
+                const videosData = [];
+                videosSnapshot.forEach(doc => {
+                    videosData.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                // Get all ads
+                const adsSnapshot = await db.collection('ads').get();
+                const adsData = [];
+                adsSnapshot.forEach(doc => {
+                    adsData.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                // Create backup object
+                const backupData = {
+                    exportedAt: new Date().toISOString(),
+                    firebaseConfig: firebaseConfig,
+                    videos: videosData,
+                    ads: adsData
+                };
+
+                // Create and download JSON file
+                const dataStr = JSON.stringify(backupData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `quickview-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                alert('✅ Data backup ပြုလုပ်ပြီးပါပြီ! backup.json ဖိုင်ကို download လုပ်ထားပါ။');
+
+            } catch (error) {
+                console.error('Backup error:', error);
+                alert('❌ Backup လုပ်ရာတွင် အမှားတစ်ခုရှိသည်');
+            }
+        }
+
+        // Restore Data
+        document.getElementById('restore-file').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    if (!confirm(`ဒီ backup file ထဲက data တွေအားလုံးကို လက်ရှိ data တွေနဲ့ အစားထိုးမှာဖြစ်ပါတယ်။ ဆက်လုပ်မှာသေချာပါသလား?`)) {
+                        return;
+                    }
+
+                    // Clear existing data
+                    const videosSnapshot = await db.collection('videos').get();
+                    const adsSnapshot = await db.collection('ads').get();
+                    
+                    const deletePromises = [
+                        ...videosSnapshot.docs.map(doc => doc.ref.delete()),
+                        ...adsSnapshot.docs.map(doc => doc.ref.delete())
+                    ];
+                    
+                    await Promise.all(deletePromises);
+
+                    // Restore videos
+                    for (const video of backupData.videos) {
+                        await db.collection('videos').doc(video.id).set(video);
+                    }
+                    
+                    // Restore ads  
+                    for (const ad of backupData.ads) {
+                        await db.collection('ads').doc(ad.id).set(ad);
+                    }
+                    
+                    alert('✅ Data restore ပြုလုပ်ပြီးပါပြီ! စာမျက်နှာကို reload လုပ်ပါ။');
+                    location.reload();
+                    
+                } catch (error) {
+                    console.error('Restore error:', error);
+                    alert('❌ Restore လုပ်ရာတွင် အမှားတစ်ခုရှိသည် - file format မှန်ရဲ့လား?');
+                }
+            };
+            
+            reader.readAsText(file);
+            this.value = ''; // Reset file input
+        });
+    </script>
+</body>
+</html>
