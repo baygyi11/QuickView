@@ -498,6 +498,301 @@
             });
         }
 
+        // Website JavaScript
+const homepage = document.getElementById('homepage');
+const videoPlayerPage = document.getElementById('video-player-page');
+const videosContainer = document.getElementById('videos-container');
+const relatedVideosContainer = document.getElementById('related-videos');
+const mainVideoPlayer = document.getElementById('main-video-player');
+const videoTitle = document.getElementById('video-title');
+const backButton = document.getElementById('back-button');
+const downloadBtn = document.getElementById('download-btn');
+const shareBtn = document.getElementById('share-btn');
+const searchInput = document.getElementById('search-input');
+const searchButton = document.getElementById('search-button');
+const mainBannerAd = document.getElementById('main-banner-ad');
+const sidebarAd = document.getElementById('sidebar-ad');
+
+let videoData = [];
+let allVideos = [];
+
+// Load videos from Firebase Firestore
+function loadVideos() {
+    db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+        videoData = [];
+        allVideos = [];
+        
+        if (snapshot.empty) {
+            videosContainer.innerHTML = '<div class="no-videos">📹 ဗီဒီယိုမရှိသေးပါ</div>';
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const video = doc.data();
+            video.id = doc.id;
+            videoData.push(video);
+            allVideos.push(video);
+        });
+        
+        renderVideos(videoData, videosContainer);
+    }, (error) => {
+        console.error('Error loading videos:', error);
+        videosContainer.innerHTML = '<div class="error">❌ ဗီဒီယိုများဖတ်ရာတွင်အမှားတစ်ခုရှိသည်</div>';
+    });
+}
+
+// Load Image Ads from Firebase Firestore
+function loadAds() {
+    // Load Main Banner Image Ads
+    db.collection('ads')
+        .where('type', '==', 'main-banner')
+        .where('adType', '==', 'image')
+        .where('isActive', '==', true)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .onSnapshot((snapshot) => {
+            // Clear only image ads, keep script ads
+            const imageAds = mainBannerAd.querySelectorAll('a');
+            imageAds.forEach(ad => ad.remove());
+            
+            if (snapshot.empty) {
+                if (mainBannerAd.children.length === 0) {
+                    mainBannerAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
+                }
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const ad = doc.data();
+                const adElement = document.createElement('a');
+                adElement.href = ad.link;
+                adElement.target = '_blank';
+                adElement.innerHTML = `
+                    <img src="${ad.image}" alt="${ad.name}" onerror="this.style.display='none'">
+                `;
+                mainBannerAd.appendChild(adElement);
+            });
+        });
+
+    // Load Sidebar Image Ads
+    db.collection('ads')
+        .where('type', '==', 'video-sidebar')
+        .where('adType', '==', 'image')
+        .where('isActive', '==', true)
+        .orderBy('createdAt', 'desc')
+        .limit(2)
+        .onSnapshot((snapshot) => {
+            // Clear only image ads, keep script ads
+            const imageAds = sidebarAd.querySelectorAll('a');
+            imageAds.forEach(ad => ad.remove());
+            
+            if (snapshot.empty) {
+                if (sidebarAd.children.length === 0) {
+                    sidebarAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
+                }
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const ad = doc.data();
+                const adElement = document.createElement('a');
+                adElement.href = ad.link;
+                adElement.target = '_blank';
+                adElement.style.display = 'block';
+                adElement.style.marginBottom = '15px';
+                adElement.innerHTML = `
+                    <img src="${ad.image}" alt="${ad.name}" style="max-width: 100%; border-radius: 8px;" onerror="this.style.display='none'">
+                `;
+                sidebarAd.appendChild(adElement);
+            });
+        });
+}
+
+// Load Script Ads from Firebase Firestore - ဒီ function ကို ထည့်ရမယ်
+function loadScriptAds() {
+    // Load Main Banner Script Ads
+    db.collection('ads')
+        .where('type', '==', 'main-banner')
+        .where('adType', '==', 'script')
+        .where('isActive', '==', true)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .onSnapshot((snapshot) => {
+            // Clear existing script ads only
+            const scriptContainers = mainBannerAd.querySelectorAll('.script-ad-container');
+            scriptContainers.forEach(container => container.remove());
+            
+            if (!snapshot.empty) {
+                snapshot.forEach((doc) => {
+                    const ad = doc.data();
+                    // Create a container for script ad
+                    const scriptContainer = document.createElement('div');
+                    scriptContainer.className = 'script-ad-container';
+                    scriptContainer.innerHTML = ad.scriptCode;
+                    mainBannerAd.appendChild(scriptContainer);
+                });
+            }
+        });
+
+    // Load Sidebar Script Ads
+    db.collection('ads')
+        .where('type', '==', 'video-sidebar')
+        .where('adType', '==', 'script')
+        .where('isActive', '==', true)
+        .orderBy('createdAt', 'desc')
+        .limit(2)
+        .onSnapshot((snapshot) => {
+            // Clear existing script ads only
+            const scriptContainers = sidebarAd.querySelectorAll('.script-ad-container');
+            scriptContainers.forEach(container => container.remove());
+            
+            if (!snapshot.empty) {
+                snapshot.forEach((doc) => {
+                    const ad = doc.data();
+                    const scriptContainer = document.createElement('div');
+                    scriptContainer.className = 'script-ad-container';
+                    scriptContainer.style.marginBottom = '15px';
+                    scriptContainer.innerHTML = ad.scriptCode;
+                    sidebarAd.appendChild(scriptContainer);
+                });
+            }
+        });
+}
+
+// Render videos function
+function renderVideos(videos, container) {
+    container.innerHTML = '';
+    
+    if (videos.length === 0) {
+        container.innerHTML = '<div class="no-results">🔍 ရှာဖွေမှုနှင့်ကိုက်ညီသော ဗီဒီယိုများမတွေ့ရှိပါ</div>';
+        return;
+    }
+    
+    videos.forEach(video => {
+        const videoElement = document.createElement('div');
+        videoElement.className = 'video-item';
+        videoElement.innerHTML = `
+            <div class="thumbnail-container">
+                <video muted loop playsinline>
+                    <source src="${video.videoUrl}" type="video/mp4">
+                </video>
+                <div class="duration">${video.duration}</div>
+            </div>
+            <div class="video-info">
+                <div class="video-title">${video.title}</div>
+                <div class="channel-name">${video.channel}</div>
+                <div class="video-meta">
+                    <span>${video.views}</span>
+                    <span>•</span>
+                    <span>${video.uploadDate}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(videoElement);
+        
+        // Auto play on hover
+        const videoThumbnail = videoElement.querySelector('video');
+        videoElement.addEventListener('mouseenter', function() {
+            videoThumbnail.play();
+        });
+        
+        videoElement.addEventListener('mouseleave', function() {
+            videoThumbnail.pause();
+            videoThumbnail.currentTime = 0;
+        });
+        
+        // Click to play video
+        videoElement.addEventListener('click', function() {
+            playVideo(video.id);
+        });
+    });
+}
+
+// Play video function
+function playVideo(videoId) {
+    const video = videoData.find(v => v.id === videoId);
+    if (video) {
+        mainVideoPlayer.src = video.videoUrl;
+        videoTitle.textContent = video.title;
+        mainVideoPlayer.muted = true;
+        
+        // Load related videos (all other videos)
+        const relatedVideos = videoData.filter(v => v.id !== videoId);
+        renderVideos(relatedVideos.slice(0, 4), relatedVideosContainer);
+        
+        // Show video player page
+        homepage.style.display = 'none';
+        videoPlayerPage.style.display = 'block';
+        window.scrollTo(0, 0);
+        mainVideoPlayer.play();
+    }
+}
+
+// Other functions
+function goBackToHomepage() {
+    videoPlayerPage.style.display = 'none';
+    homepage.style.display = 'block';
+    mainVideoPlayer.pause();
+}
+
+function downloadVideo() {
+    const videoUrl = mainVideoPlayer.src;
+    if (videoUrl) {
+        const a = document.createElement('a');
+        a.href = videoUrl;
+        a.download = 'video.mp4';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } else {
+        alert('ဒေါင်းလုဒ်ရယူရန် ဗီဒီယိုမရှိပါ။');
+    }
+}
+
+function shareVideo() {
+    if (navigator.share) {
+        navigator.share({
+            title: videoTitle.textContent,
+            url: window.location.href
+        }).catch(error => console.log('Error sharing:', error));
+    } else {
+        alert('မျှဝေရန် လုပ်ဆောင်ချက်ကို သင့်စက်တွင် မပံ့ပိုးထားပါ။');
+    }
+}
+
+function performSearch(query) {
+    if (query.trim() === '') {
+        renderVideos(allVideos, videosContainer);
+        return;
+    }
+    
+    const searchResults = allVideos.filter(video => 
+        video.title.toLowerCase().includes(query.toLowerCase()) ||
+        video.channel.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    renderVideos(searchResults, videosContainer);
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    loadVideos();
+    loadAds();
+    loadScriptAds(); // ဒီ line ကို ထည့်ပါ
+    
+    backButton.addEventListener('click', goBackToHomepage);
+    downloadBtn.addEventListener('click', downloadVideo);
+    shareBtn.addEventListener('click', shareVideo);
+    
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') performSearch(this.value);
+    });
+    
+    searchButton.addEventListener('click', function() {
+        performSearch(searchInput.value);
+    });
+});
+
         // Load Ads from Firebase Firestore
         function loadAds() {
             // Load Main Banner Ads
