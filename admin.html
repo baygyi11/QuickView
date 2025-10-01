@@ -246,6 +246,15 @@
         .file-input {
             display: none;
         }
+
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -256,7 +265,7 @@
                 <p>ဗီဒီယိုနှင့် ကြော်ငြာများ စီမံခန့်ခွဲရန်</p>
             </div>
             <div class="header-actions">
-                <a href="https://YOUR_FIREBASE_APP.web.app" class="btn-backup">🏠 Website</a>
+                <a href="https://quickview-50eba.web.app" class="btn-backup">🏠 Website</a>
                 <button class="btn-backup" onclick="exportData()">💾 Backup Data</button>
                 <button class="btn-restore" onclick="document.getElementById('restore-file').click()">📥 Restore Data</button>
                 <input type="file" id="restore-file" class="file-input" accept=".json">
@@ -275,6 +284,7 @@
                     <h2>➕ ဗီဒီယိုအသစ်ထည့်ရန်</h2>
                     
                     <div id="video-status" class="status-message"></div>
+                    <div id="debug-info" class="debug-info"></div>
                     
                     <form id="video-form">
                         <div class="form-group">
@@ -386,17 +396,41 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Configuration - သင့်ရဲ့ config နဲ့အစားထိုးပါ
+        // Firebase Configuration - Fixed version
         const firebaseConfig = {
             apiKey: "AIzaSyDpVAez3lDTjspACADGiGt9To1hxq_qoeM",
             authDomain: "quickview-50eba.firebaseapp.com",
             projectId: "quickview-50eba",
-            storageBucket: "quickview-50eba.firebasestorage.app",
+            storageBucket: "quickview-50eba.appspot.com", // Fixed storage bucket
             messagingSenderId: "705897955715",
             appId: "1:705897955715:web:f81d2d4c0a927ea0b7f6b6"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Debug info
+        document.getElementById('debug-info').innerHTML = 
+            `Firebase Project: ${firebaseConfig.projectId} | Status: <span id="firebase-status">Initializing...</span>`;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            document.getElementById('firebase-status').innerHTML = '✅ Connected';
+            document.getElementById('firebase-status').style.color = 'green';
+            
+            // Test connection
+            db.collection('videos').get().then(() => {
+                console.log('Firestore connection successful');
+            }).catch(error => {
+                console.error('Firestore connection failed:', error);
+                document.getElementById('firebase-status').innerHTML = '❌ Connection Failed';
+                document.getElementById('firebase-status').style.color = 'red';
+            });
+            
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            document.getElementById('firebase-status').innerHTML = '❌ Initialization Failed';
+            document.getElementById('firebase-status').style.color = 'red';
+        }
+
         const db = firebase.firestore();
 
         // Tab Management
@@ -421,7 +455,7 @@
             
             setTimeout(() => {
                 statusEl.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
 
         // Ad Preview
@@ -437,7 +471,7 @@
             }
         });
 
-        // Video Management
+        // Video Management - Fixed version
         document.getElementById('video-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -448,43 +482,55 @@
                 channel: document.getElementById('video-channel').value,
                 duration: document.getElementById('video-duration').value,
                 views: "၀ ကြည့်ရှုမှု",
-                uploadDate: "ယခုနောက်ဆုံး",
+                uploadDate: new Date().toLocaleDateString('my-MM'),
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            console.log('Adding video:', videoData);
+
             try {
-                await db.collection('videos').add(videoData);
+                const docRef = await db.collection('videos').add(videoData);
+                console.log('Video added with ID:', docRef.id);
                 showStatus('✅ ဗီဒီယိုထည့်သွင်းပြီးပါပြီ!', 'success', 'video');
                 document.getElementById('video-form').reset();
+                
+                // Reload videos list
+                loadVideos();
             } catch (error) {
-                console.error('Error:', error);
-                showStatus('❌ ဗီဒီယိုထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်', 'error', 'video');
+                console.error('Error adding video:', error);
+                showStatus('❌ ဗီဒီယိုထည့်သွင်းရာတွင် အမှားတစ်ခုရှိသည်: ' + error.message, 'error', 'video');
             }
         });
 
-        // Load Videos
-        db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            const videosList = document.getElementById('videos-list');
-            videosList.innerHTML = '';
+        // Load Videos - Fixed version
+        function loadVideos() {
+            db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+                const videosList = document.getElementById('videos-list');
+                videosList.innerHTML = '';
 
-            if (snapshot.empty) {
-                videosList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ဗီဒီယိုမရှိသေးပါ</p>';
-                return;
-            }
+                if (snapshot.empty) {
+                    videosList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">❌ ဗီဒီယိုမရှိသေးပါ</p>';
+                    return;
+                }
 
-            snapshot.forEach((doc) => {
-                const video = doc.data();
-                const videoCard = document.createElement('div');
-                videoCard.className = 'item-card';
-                videoCard.innerHTML = `
-                    <div class="item-title">${video.title}</div>
-                    <div class="item-meta">${video.channel} • ${video.duration}</div>
-                    <div style="font-size: 12px; color: #95a5a6;">${video.views} • ${video.uploadDate}</div>
-                    <button onclick="deleteVideo('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
-                `;
-                videosList.appendChild(videoCard);
+                snapshot.forEach((doc) => {
+                    const video = doc.data();
+                    const videoCard = document.createElement('div');
+                    videoCard.className = 'item-card';
+                    videoCard.innerHTML = `
+                        <div class="item-title">${video.title}</div>
+                        <div class="item-meta">${video.channel} • ${video.duration}</div>
+                        <div style="font-size: 12px; color: #95a5a6;">${video.views} • ${video.uploadDate}</div>
+                        <button onclick="deleteVideo('${doc.id}')" class="btn-danger">🗑️ ဖျက်မည်</button>
+                    `;
+                    videosList.appendChild(videoCard);
+                });
+            }, (error) => {
+                console.error('Error loading videos:', error);
+                document.getElementById('videos-list').innerHTML = 
+                    '<p style="text-align: center; color: #e74c3c;">❌ ဗီဒီယိုများဖတ်ရာတွင်အမှားတစ်ခုရှိသည်</p>';
             });
-        });
+        }
 
         // Delete Video
         async function deleteVideo(videoId) {
@@ -676,6 +722,12 @@
             
             reader.readAsText(file);
             this.value = ''; // Reset file input
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVideos();
+            console.log('Admin panel initialized');
         });
     </script>
 </body>
