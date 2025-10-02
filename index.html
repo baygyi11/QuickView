@@ -18,7 +18,6 @@
             line-height: 1.6;
         }
 
-        /* Header Styles */
         header {
             background-color: #0f0f0f;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -59,11 +58,6 @@
             color: #fff;
         }
 
-        .search-bar input:focus {
-            border-color: #1c62b9;
-            background: #121212;
-        }
-
         .search-btn {
             position: absolute;
             right: 10px;
@@ -82,7 +76,6 @@
             justify-content: center;
         }
 
-        /* Banner Ads */
         .banner-ad-container {
             background: #1a1a1a;
             padding: 15px 0;
@@ -95,18 +88,12 @@
             text-align: center;
         }
 
-        .banner-ad a {
-            display: block;
-        }
-
         .banner-ad img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            border: 2px solid #3498db;
         }
 
-        /* Main Content Styles */
         .container {
             max-width: 1400px;
             margin: 20px auto;
@@ -120,7 +107,6 @@
             border-bottom: 2px solid #ff0000;
         }
 
-        /* Video Grid Styles */
         .video-grid {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
@@ -145,12 +131,6 @@
             }
         }
 
-        @media (min-width: 1280px) {
-            .video-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-
         .video-item {
             background: transparent;
             border-radius: 12px;
@@ -172,12 +152,17 @@
             border-radius: 12px;
         }
 
-        .thumbnail-container video {
+        .thumbnail-container img {
             position: absolute;
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .video-item:hover .thumbnail-container img {
+            transform: scale(1.1);
         }
 
         .video-info {
@@ -219,7 +204,6 @@
             font-size: 12px;
         }
 
-        /* Video Player Page Styles */
         .video-player-container {
             display: none;
             max-width: 1400px;
@@ -257,56 +241,10 @@
             border: 1px solid #272727;
         }
 
-        .sidebar-ad {
-            text-align: center;
-        }
-
-        .sidebar-ad a {
-            display: block;
-        }
-
         .sidebar-ad img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            border: 2px solid #f39c12;
-        }
-
-        .video-actions {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            padding: 8px 15px;
-            background: #272727;
-            border: none;
-            border-radius: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #fff;
-            transition: background 0.3s;
-        }
-
-        .action-btn:hover {
-            background: #3d3d3d;
-        }
-
-        .related-videos {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #272727;
-        }
-
-        .related-videos .video-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
         }
 
         .video-player {
@@ -337,15 +275,9 @@
             cursor: pointer;
             padding: 8px 15px;
             border-radius: 20px;
-            transition: background 0.3s;
             background: #272727;
         }
 
-        .back-btn:hover {
-            background: #3d3d3d;
-        }
-
-        /* Status Messages */
         .loading, .no-videos, .no-results, .error, .no-ads {
             text-align: center;
             padding: 40px;
@@ -354,20 +286,38 @@
             grid-column: 1 / -1;
         }
 
-        .error {
-            color: #e74c3c;
-        }
-
         .no-ads {
             color: #7f8c8d;
             font-size: 14px;
             padding: 20px;
         }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 10px;
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #333;
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header Section -->
     <header>
         <div class="header-content">
             <div class="logo">QuickView</div>
@@ -375,30 +325,28 @@
                 <input type="text" id="search-input" placeholder="ဗီဒီယိုရှာဖွေရန်...">
                 <button class="search-btn" id="search-button">🔍</button>
             </div>
-            <!-- Admin Link မပါဝင်ပါ -->
+            <!-- Admin Link ကိုဖျောက်ထားပါ -->
+            <button class="refresh-btn" id="refresh-btn" title="Refresh Data">🔄</button>
         </div>
     </header>
 
-    <!-- Main Banner Ad -->
     <div class="banner-ad-container">
         <div id="main-banner-ad" class="banner-ad">
-            <!-- Banner ads will be loaded here automatically -->
+            <div class="loading">📢 ကြော်ငြာများရောက်ရှိလာနေသည်...</div>
         </div>
     </div>
 
-    <!-- Main Content - Homepage -->
     <div class="container" id="homepage">
         <h2 class="section-title">ဗီဒီယိုများ</h2>
         <div class="video-grid" id="videos-container">
             <div class="loading">ဗီဒီယိုများရောက်ရှိလာနေသည်...</div>
         </div>
+        <div class="last-updated" id="last-updated"></div>
     </div>
 
-    <!-- Video Player Page -->
     <div class="video-player-container" id="video-player-page">
         <a class="back-btn" id="back-button">
-            <i class="fas fa-arrow-left"></i>
-            နောက်သို့
+            ← ဗီဒီယိုများဆီသို့
         </a>
         <div class="player-layout">
             <div class="main-player">
@@ -409,53 +357,29 @@
                     </video>
                 </div>
                 <h2 id="video-title">ဗီဒီယိုခေါင်းစဉ်</h2>
-                <div class="video-actions">
-                    <button class="action-btn" id="download-btn">
-                        <i class="fas fa-download"></i>
-                        <span>ဒေါင်းလုဒ်</span>
-                    </button>
-                    <button class="action-btn" id="share-btn">
-                        <i class="fas fa-share"></i>
-                        <span>မျှဝေရန်</span>
-                    </button>
-                </div>
             </div>
             <div class="player-sidebar">
-                <!-- Sidebar Ads -->
                 <div class="sidebar-ad-container">
                     <div id="sidebar-ad" class="sidebar-ad">
-                        <!-- Sidebar ads will be loaded here automatically -->
+                        <div class="loading">📢 ကြော်ငြာများရောက်ရှိလာနေသည်...</div>
                     </div>
                 </div>
                 
-                <!-- Related Videos -->
                 <div class="related-videos">
                     <h3>အခြားဗီဒီယိုများ</h3>
-                    <div class="video-grid" id="related-videos"></div>
+                    <div class="video-grid" id="related-videos">
+                        <div class="loading">ဗီဒီယိုများရောက်ရှိလာနေသည်...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpVAez3lDTjspACADGiGt9To1hxq_qoeM",
-            authDomain: "quickview-50eba.firebaseapp.com",
-            projectId: "quickview-50eba",
-            storageBucket: "quickview-50eba.firebasestorage.app",
-            messagingSenderId: "705897955715",
-            appId: "1:705897955715:web:f81d2d4c0a927ea0b7f6b6"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Website JavaScript
+        // Website - No Admin Link Version
+        const JSON_FILE = 'data.json';
+        
+        // DOM Elements
         const homepage = document.getElementById('homepage');
         const videoPlayerPage = document.getElementById('video-player-page');
         const videosContainer = document.getElementById('videos-container');
@@ -463,107 +387,77 @@
         const mainVideoPlayer = document.getElementById('main-video-player');
         const videoTitle = document.getElementById('video-title');
         const backButton = document.getElementById('back-button');
-        const downloadBtn = document.getElementById('download-btn');
-        const shareBtn = document.getElementById('share-btn');
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
         const mainBannerAd = document.getElementById('main-banner-ad');
         const sidebarAd = document.getElementById('sidebar-ad');
+        const lastUpdated = document.getElementById('last-updated');
+        const refreshBtn = document.getElementById('refresh-btn');
 
         let videoData = [];
         let allVideos = [];
 
-        // Load videos from Firebase Firestore
-        function loadVideos() {
-            db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-                videoData = [];
-                allVideos = [];
-                
-                if (snapshot.empty) {
-                    videosContainer.innerHTML = '<div class="no-videos">📹 ဗီဒီယိုမရှိသေးပါ</div>';
-                    return;
+        // Load data from JSON file
+        async function loadDataFromJSON() {
+            try {
+                const response = await fetch(JSON_FILE + '?t=' + Date.now());
+                if (!response.ok) {
+                    throw new Error('JSON file not found');
                 }
-
-                snapshot.forEach((doc) => {
-                    const video = doc.data();
-                    video.id = doc.id;
-                    videoData.push(video);
-                    allVideos.push(video);
-                });
                 
-                renderVideos(videoData, videosContainer);
-            }, (error) => {
-                console.error('Error loading videos:', error);
-                videosContainer.innerHTML = '<div class="error">❌ ဗီဒီယိုများဖတ်ရာတွင်အမှားတစ်ခုရှိသည်</div>';
-            });
+                const data = await response.json();
+                
+                // Update last updated time
+                if (data.lastUpdated) {
+                    const updateTime = new Date(data.lastUpdated);
+                    lastUpdated.innerHTML = `🕒 နောက်ဆုံးအပ်ဒိတ်: ${updateTime.toLocaleString('my-MM')}`;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error loading JSON:', error);
+                videosContainer.innerHTML = '<div class="error">❌ ဒေတာများမရှိသေးပါ</div>';
+                return null;
+            }
         }
 
-        // Website JavaScript
-const homepage = document.getElementById('homepage');
-const videoPlayerPage = document.getElementById('video-player-page');
-const videosContainer = document.getElementById('videos-container');
-const relatedVideosContainer = document.getElementById('related-videos');
-const mainVideoPlayer = document.getElementById('main-video-player');
-const videoTitle = document.getElementById('video-title');
-const backButton = document.getElementById('back-button');
-const downloadBtn = document.getElementById('download-btn');
-const shareBtn = document.getElementById('share-btn');
-const searchInput = document.getElementById('search-input');
-const searchButton = document.getElementById('search-button');
-const mainBannerAd = document.getElementById('main-banner-ad');
-const sidebarAd = document.getElementById('sidebar-ad');
+        // Load videos from JSON
+        async function loadVideos() {
+            const data = await loadDataFromJSON();
+            if (!data) return;
 
-let videoData = [];
-let allVideos = [];
-
-// Load videos from Firebase Firestore
-function loadVideos() {
-    db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-        videoData = [];
-        allVideos = [];
-        
-        if (snapshot.empty) {
-            videosContainer.innerHTML = '<div class="no-videos">📹 ဗီဒီယိုမရှိသေးပါ</div>';
-            return;
-        }
-
-        snapshot.forEach((doc) => {
-            const video = doc.data();
-            video.id = doc.id;
-            videoData.push(video);
-            allVideos.push(video);
-        });
-        
-        renderVideos(videoData, videosContainer);
-    }, (error) => {
-        console.error('Error loading videos:', error);
-        videosContainer.innerHTML = '<div class="error">❌ ဗီဒီယိုများဖတ်ရာတွင်အမှားတစ်ခုရှိသည်</div>';
-    });
-}
-
-// Load Image Ads from Firebase Firestore
-function loadAds() {
-    // Load Main Banner Image Ads
-    db.collection('ads')
-        .where('type', '==', 'main-banner')
-        .where('adType', '==', 'image')
-        .where('isActive', '==', true)
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .onSnapshot((snapshot) => {
-            // Clear only image ads, keep script ads
-            const imageAds = mainBannerAd.querySelectorAll('a');
-            imageAds.forEach(ad => ad.remove());
+            videoData = data.videos || [];
+            allVideos = [...videoData];
             
-            if (snapshot.empty) {
-                if (mainBannerAd.children.length === 0) {
-                    mainBannerAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
-                }
+            if (videoData.length === 0) {
+                videosContainer.innerHTML = '<div class="no-videos">📹 ဗီဒီယိုမရှိသေးပါ</div>';
                 return;
             }
+            
+            renderVideos(videoData, videosContainer);
+        }
 
-            snapshot.forEach((doc) => {
-                const ad = doc.data();
+        // Load Ads from JSON
+        async function loadAds() {
+            const data = await loadDataFromJSON();
+            if (!data) return;
+
+            const ads = data.ads || [];
+            const scriptAds = data.scriptAds || [];
+
+            // Clear existing ads
+            mainBannerAd.innerHTML = '';
+            sidebarAd.innerHTML = '';
+
+            // Load Main Banner Image Ads
+            const mainBannerImageAds = ads.filter(ad => 
+                ad.type === 'main-banner' && 
+                ad.adType === 'image' && 
+                ad.isActive
+            );
+            
+            if (mainBannerImageAds.length > 0) {
+                const ad = mainBannerImageAds[0];
                 const adElement = document.createElement('a');
                 adElement.href = ad.link;
                 adElement.target = '_blank';
@@ -571,30 +465,30 @@ function loadAds() {
                     <img src="${ad.image}" alt="${ad.name}" onerror="this.style.display='none'">
                 `;
                 mainBannerAd.appendChild(adElement);
-            });
-        });
-
-    // Load Sidebar Image Ads
-    db.collection('ads')
-        .where('type', '==', 'video-sidebar')
-        .where('adType', '==', 'image')
-        .where('isActive', '==', true)
-        .orderBy('createdAt', 'desc')
-        .limit(2)
-        .onSnapshot((snapshot) => {
-            // Clear only image ads, keep script ads
-            const imageAds = sidebarAd.querySelectorAll('a');
-            imageAds.forEach(ad => ad.remove());
-            
-            if (snapshot.empty) {
-                if (sidebarAd.children.length === 0) {
-                    sidebarAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
-                }
-                return;
             }
 
-            snapshot.forEach((doc) => {
-                const ad = doc.data();
+            // Load Main Banner Script Ads
+            const mainBannerScriptAds = scriptAds.filter(ad => 
+                ad.type === 'main-banner' && 
+                ad.isActive
+            );
+            
+            if (mainBannerScriptAds.length > 0) {
+                const ad = mainBannerScriptAds[0];
+                const scriptContainer = document.createElement('div');
+                scriptContainer.className = 'script-ad-container';
+                scriptContainer.innerHTML = ad.scriptCode;
+                mainBannerAd.appendChild(scriptContainer);
+            }
+
+            // Load Sidebar Image Ads
+            const sidebarImageAds = ads.filter(ad => 
+                ad.type === 'video-sidebar' && 
+                ad.adType === 'image' && 
+                ad.isActive
+            ).slice(0, 2);
+            
+            sidebarImageAds.forEach(ad => {
                 const adElement = document.createElement('a');
                 adElement.href = ad.link;
                 adElement.target = '_blank';
@@ -605,249 +499,29 @@ function loadAds() {
                 `;
                 sidebarAd.appendChild(adElement);
             });
-        });
-}
 
-// Load Script Ads from Firebase Firestore - ဒီ function ကို ထည့်ရမယ်
-function loadScriptAds() {
-    // Load Main Banner Script Ads
-    db.collection('ads')
-        .where('type', '==', 'main-banner')
-        .where('adType', '==', 'script')
-        .where('isActive', '==', true)
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .onSnapshot((snapshot) => {
-            // Clear existing script ads only
-            const scriptContainers = mainBannerAd.querySelectorAll('.script-ad-container');
-            scriptContainers.forEach(container => container.remove());
+            // Load Sidebar Script Ads
+            const sidebarScriptAds = scriptAds.filter(ad => 
+                ad.type === 'video-sidebar' && 
+                ad.isActive
+            ).slice(0, 2);
             
-            if (!snapshot.empty) {
-                snapshot.forEach((doc) => {
-                    const ad = doc.data();
-                    // Create a container for script ad
-                    const scriptContainer = document.createElement('div');
-                    scriptContainer.className = 'script-ad-container';
-                    scriptContainer.innerHTML = ad.scriptCode;
-                    mainBannerAd.appendChild(scriptContainer);
-                });
-            }
-        });
+            sidebarScriptAds.forEach(ad => {
+                const scriptContainer = document.createElement('div');
+                scriptContainer.className = 'script-ad-container';
+                scriptContainer.style.marginBottom = '15px';
+                scriptContainer.innerHTML = ad.scriptCode;
+                sidebarAd.appendChild(scriptContainer);
+            });
 
-    // Load Sidebar Script Ads
-    db.collection('ads')
-        .where('type', '==', 'video-sidebar')
-        .where('adType', '==', 'script')
-        .where('isActive', '==', true)
-        .orderBy('createdAt', 'desc')
-        .limit(2)
-        .onSnapshot((snapshot) => {
-            // Clear existing script ads only
-            const scriptContainers = sidebarAd.querySelectorAll('.script-ad-container');
-            scriptContainers.forEach(container => container.remove());
+            // Show no ads message if no ads are present
+            if (mainBannerAd.children.length === 0) {
+                mainBannerAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
+            }
             
-            if (!snapshot.empty) {
-                snapshot.forEach((doc) => {
-                    const ad = doc.data();
-                    const scriptContainer = document.createElement('div');
-                    scriptContainer.className = 'script-ad-container';
-                    scriptContainer.style.marginBottom = '15px';
-                    scriptContainer.innerHTML = ad.scriptCode;
-                    sidebarAd.appendChild(scriptContainer);
-                });
+            if (sidebarAd.children.length === 0) {
+                sidebarAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
             }
-        });
-}
-
-// Render videos function
-function renderVideos(videos, container) {
-    container.innerHTML = '';
-    
-    if (videos.length === 0) {
-        container.innerHTML = '<div class="no-results">🔍 ရှာဖွေမှုနှင့်ကိုက်ညီသော ဗီဒီယိုများမတွေ့ရှိပါ</div>';
-        return;
-    }
-    
-    videos.forEach(video => {
-        const videoElement = document.createElement('div');
-        videoElement.className = 'video-item';
-        videoElement.innerHTML = `
-            <div class="thumbnail-container">
-                <video muted loop playsinline>
-                    <source src="${video.videoUrl}" type="video/mp4">
-                </video>
-                <div class="duration">${video.duration}</div>
-            </div>
-            <div class="video-info">
-                <div class="video-title">${video.title}</div>
-                <div class="channel-name">${video.channel}</div>
-                <div class="video-meta">
-                    <span>${video.views}</span>
-                    <span>•</span>
-                    <span>${video.uploadDate}</span>
-                </div>
-            </div>
-        `;
-        container.appendChild(videoElement);
-        
-        // Auto play on hover
-        const videoThumbnail = videoElement.querySelector('video');
-        videoElement.addEventListener('mouseenter', function() {
-            videoThumbnail.play();
-        });
-        
-        videoElement.addEventListener('mouseleave', function() {
-            videoThumbnail.pause();
-            videoThumbnail.currentTime = 0;
-        });
-        
-        // Click to play video
-        videoElement.addEventListener('click', function() {
-            playVideo(video.id);
-        });
-    });
-}
-
-// Play video function
-function playVideo(videoId) {
-    const video = videoData.find(v => v.id === videoId);
-    if (video) {
-        mainVideoPlayer.src = video.videoUrl;
-        videoTitle.textContent = video.title;
-        mainVideoPlayer.muted = true;
-        
-        // Load related videos (all other videos)
-        const relatedVideos = videoData.filter(v => v.id !== videoId);
-        renderVideos(relatedVideos.slice(0, 4), relatedVideosContainer);
-        
-        // Show video player page
-        homepage.style.display = 'none';
-        videoPlayerPage.style.display = 'block';
-        window.scrollTo(0, 0);
-        mainVideoPlayer.play();
-    }
-}
-
-// Other functions
-function goBackToHomepage() {
-    videoPlayerPage.style.display = 'none';
-    homepage.style.display = 'block';
-    mainVideoPlayer.pause();
-}
-
-function downloadVideo() {
-    const videoUrl = mainVideoPlayer.src;
-    if (videoUrl) {
-        const a = document.createElement('a');
-        a.href = videoUrl;
-        a.download = 'video.mp4';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    } else {
-        alert('ဒေါင်းလုဒ်ရယူရန် ဗီဒီယိုမရှိပါ။');
-    }
-}
-
-function shareVideo() {
-    if (navigator.share) {
-        navigator.share({
-            title: videoTitle.textContent,
-            url: window.location.href
-        }).catch(error => console.log('Error sharing:', error));
-    } else {
-        alert('မျှဝေရန် လုပ်ဆောင်ချက်ကို သင့်စက်တွင် မပံ့ပိုးထားပါ။');
-    }
-}
-
-function performSearch(query) {
-    if (query.trim() === '') {
-        renderVideos(allVideos, videosContainer);
-        return;
-    }
-    
-    const searchResults = allVideos.filter(video => 
-        video.title.toLowerCase().includes(query.toLowerCase()) ||
-        video.channel.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    renderVideos(searchResults, videosContainer);
-}
-
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    loadVideos();
-    loadAds();
-    loadScriptAds(); // ဒီ line ကို ထည့်ပါ
-    
-    backButton.addEventListener('click', goBackToHomepage);
-    downloadBtn.addEventListener('click', downloadVideo);
-    shareBtn.addEventListener('click', shareVideo);
-    
-    searchInput.addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') performSearch(this.value);
-    });
-    
-    searchButton.addEventListener('click', function() {
-        performSearch(searchInput.value);
-    });
-});
-
-        // Load Ads from Firebase Firestore
-        function loadAds() {
-            // Load Main Banner Ads
-            db.collection('ads')
-                .where('type', '==', 'main-banner')
-                .where('isActive', '==', true)
-                .orderBy('createdAt', 'desc')
-                .limit(1)
-                .onSnapshot((snapshot) => {
-                    mainBannerAd.innerHTML = '';
-                    
-                    if (snapshot.empty) {
-                        mainBannerAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
-                        return;
-                    }
-
-                    snapshot.forEach((doc) => {
-                        const ad = doc.data();
-                        const adElement = document.createElement('a');
-                        adElement.href = ad.link;
-                        adElement.target = '_blank';
-                        adElement.innerHTML = `
-                            <img src="${ad.image}" alt="${ad.name}" onerror="this.style.display='none'">
-                        `;
-                        mainBannerAd.appendChild(adElement);
-                    });
-                });
-
-            // Load Sidebar Ads
-            db.collection('ads')
-                .where('type', '==', 'video-sidebar')
-                .where('isActive', '==', true)
-                .orderBy('createdAt', 'desc')
-                .limit(2)
-                .onSnapshot((snapshot) => {
-                    sidebarAd.innerHTML = '';
-                    
-                    if (snapshot.empty) {
-                        sidebarAd.innerHTML = '<div class="no-ads">📢 ကြော်ငြာမရှိပါ</div>';
-                        return;
-                    }
-
-                    snapshot.forEach((doc) => {
-                        const ad = doc.data();
-                        const adElement = document.createElement('a');
-                        adElement.href = ad.link;
-                        adElement.target = '_blank';
-                        adElement.style.display = 'block';
-                        adElement.style.marginBottom = '15px';
-                        adElement.innerHTML = `
-                            <img src="${ad.image}" alt="${ad.name}" style="max-width: 100%; border-radius: 8px;" onerror="this.style.display='none'">
-                        `;
-                        sidebarAd.appendChild(adElement);
-                    });
-                });
         }
 
         // Render videos function
@@ -864,9 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 videoElement.className = 'video-item';
                 videoElement.innerHTML = `
                     <div class="thumbnail-container">
-                        <video muted loop playsinline>
-                            <source src="${video.videoUrl}" type="video/mp4">
-                        </video>
+                        <img src="${video.thumbnail}" alt="${video.title}" 
+                             onerror="this.src='https://via.placeholder.com/300x169/333333/ffffff?text=Thumbnail+Error'">
                         <div class="duration">${video.duration}</div>
                     </div>
                     <div class="video-info">
@@ -881,17 +554,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 container.appendChild(videoElement);
                 
-                // Auto play on hover
-                const videoThumbnail = videoElement.querySelector('video');
-                videoElement.addEventListener('mouseenter', function() {
-                    videoThumbnail.play();
-                });
-                
-                videoElement.addEventListener('mouseleave', function() {
-                    videoThumbnail.pause();
-                    videoThumbnail.currentTime = 0;
-                });
-                
                 // Click to play video
                 videoElement.addEventListener('click', function() {
                     playVideo(video.id);
@@ -905,7 +567,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (video) {
                 mainVideoPlayer.src = video.videoUrl;
                 videoTitle.textContent = video.title;
-                mainVideoPlayer.muted = true;
                 
                 // Load related videos (all other videos)
                 const relatedVideos = videoData.filter(v => v.id !== videoId);
@@ -915,7 +576,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 homepage.style.display = 'none';
                 videoPlayerPage.style.display = 'block';
                 window.scrollTo(0, 0);
-                mainVideoPlayer.play();
+                
+                // Auto-play video
+                mainVideoPlayer.play().catch(e => {
+                    console.log('Auto-play prevented:', e);
+                });
             }
         }
 
@@ -924,31 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
             videoPlayerPage.style.display = 'none';
             homepage.style.display = 'block';
             mainVideoPlayer.pause();
-        }
-
-        function downloadVideo() {
-            const videoUrl = mainVideoPlayer.src;
-            if (videoUrl) {
-                const a = document.createElement('a');
-                a.href = videoUrl;
-                a.download = 'video.mp4';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } else {
-                alert('ဒေါင်းလုဒ်ရယူရန် ဗီဒီယိုမရှိပါ။');
-            }
-        }
-
-        function shareVideo() {
-            if (navigator.share) {
-                navigator.share({
-                    title: videoTitle.textContent,
-                    url: window.location.href
-                }).catch(error => console.log('Error sharing:', error));
-            } else {
-                alert('မျှဝေရန် လုပ်ဆောင်ချက်ကို သင့်စက်တွင် မပံ့ပိုးထားပါ။');
-            }
+            mainVideoPlayer.currentTime = 0;
         }
 
         function performSearch(query) {
@@ -965,14 +606,35 @@ document.addEventListener('DOMContentLoaded', function() {
             renderVideos(searchResults, videosContainer);
         }
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            loadVideos();
-            loadAds();
+        // Refresh data function
+        async function refreshData() {
+            refreshBtn.style.animation = 'spin 1s linear';
+            videosContainer.innerHTML = '<div class="loading">ဗီဒီယိုများပြန်လည်ရောက်ရှိလာနေသည်...</div>';
             
+            await loadVideos();
+            await loadAds();
+            
+            setTimeout(() => {
+                refreshBtn.style.animation = '';
+            }, 1000);
+        }
+
+        // Auto-refresh data every 60 seconds
+        function startAutoRefresh() {
+            setInterval(async () => {
+                await loadVideos();
+                await loadAds();
+            }, 60000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load initial data
+            await loadVideos();
+            await loadAds();
+            
+            // Set up event listeners
             backButton.addEventListener('click', goBackToHomepage);
-            downloadBtn.addEventListener('click', downloadVideo);
-            shareBtn.addEventListener('click', shareVideo);
             
             searchInput.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') performSearch(this.value);
@@ -981,7 +643,22 @@ document.addEventListener('DOMContentLoaded', function() {
             searchButton.addEventListener('click', function() {
                 performSearch(searchInput.value);
             });
+
+            refreshBtn.addEventListener('click', refreshData);
+
+            // Start auto-refresh
+            startAutoRefresh();
         });
+
+        // Add CSS animation for refresh button
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
